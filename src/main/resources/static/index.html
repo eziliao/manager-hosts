@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Host 列表</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <th style="background-color: aquamarine;width: 160px;">IP</th>
+            <th style="background-color: bisque;width: 650px;">Hosts</th>
+            <th style="background-color: bisque;width: 650px;">Operate</th>
+            <th style="background-color: bisque;width: 120px;">Operate</th>
+        </thead>
+        <tbody id="content">
+
+        </tbody>
+    </table>
+<script src="jquery-1.12.3.min.js"></script>
+<script>
+    $(function(){
+
+        function init(){
+            $.ajax({
+                type: "GET",
+                url: "/hosts/list",
+                success: function(msg){
+                    let html = '';
+                    $.each(msg,function (i,v) {
+                        html+='<tr>';
+                        html+='<td style="background-color: aquamarine;width: 160px;text-align: center"><input type="hidden" name="key" value="'+i+'">'+i+'</td>'
+                        html+='<td style="background-color: bisque"><textarea name="'+i+'" style="overflow: auto;height: 200px;width:650px" readonly>'+v+'</textarea></td>'
+                        html+='<td style="background-color: bisque"><textarea name="content" style="overflow: auto;height: 200px;width:650px"></textarea></td>'
+                        html+='<td style="background-color: bisque"><input type="button" value="添加" class="clickRes" data-type="add" style="background-color: aqua;margin: 0 10px;"><input type="button" value="删除" class="clickRes" data-type="del" style="background-color: red"></td>'
+                        html+='</tr>';
+                    });
+                    $('#content').html(html);
+                }
+            });
+        }
+
+        let PageObj = {
+            add: function ($this) {
+                let key = $('input[name=key]',$this.parent().parent()).val();
+                let content =$('textarea[name=content]',$this.parent().parent()).val();
+                $.ajax({
+                    type: "POST",
+                    url: "/hosts/add",
+                    data:{key:key,content:content},
+                    success: function(msg){
+                        $('textarea[name=content]',$this.parent().parent()).val('');
+                        PageObj.refreshKey(key);
+                        alert(JSON.stringify(msg));
+                    }
+                });
+            },
+            del: function ($this) {
+                let key = $('input[name=key]',$this.parent().parent()).val();
+                let content =$('textarea[name=content]',$this.parent().parent()).val();
+                $.ajax({
+                    type: "POST",
+                    url: "/hosts/deleteByContent",
+                    data:{key:key,content:content},
+                    success: function(msg){
+                        $('textarea[name=content]',$this.parent().parent()).val('');
+                        PageObj.refreshKey(key);
+                        alert(JSON.stringify(msg));
+                    }
+                });
+            },
+            refreshKey:function (key) {
+                $.ajax({
+                    type: "GET",
+                    url: "/hosts/get",
+                    data:{key:key},
+                    success: function(msg){
+                        $('textarea[name="'+key+'"]').val(msg);
+                    }
+                });
+            }
+        };
+
+        $(document).on('click', '.clickRes', function (event) {
+            /*放弃执行默认动作*/
+            event.preventDefault();
+            var $this = $(this),
+                type = $this.data('type');
+            PageObj[type] ? PageObj[type]($this) : console.error('未找到对应的处理方法');
+        });
+
+        init();
+    });
+</script>
+</body>
+</html>
