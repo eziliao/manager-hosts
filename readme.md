@@ -3,4 +3,4 @@
 
 <font style="color:red">内网开发环境使用</font>
 
-![avatar](demo.png)
+![demo.png](https://eziliao.cn/upload/2021/11/demo-349738558cd4482683eb2f95d346276b.png)
